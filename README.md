@@ -87,15 +87,6 @@ async function startListening() {
 
 See [`worker-template/`](./worker-template/) for the one-file Cloudflare Worker. Deploy it with `wrangler deploy`, set `SHARED_SECRET` and `DEEPGRAM_API_KEY` as Wrangler secrets, paste the deployed URL + secret into your plugin's settings.
 
-## Apps using this pattern
-
-Two real apps currently do this with their own copy of these files; both will migrate to this package as it stabilizes:
-
-- **[Cue](https://github.com/<you>/Cue)** — multi-mode conversation coach
-- **[Hands Free Lift](https://github.com/<you>/HandsFree)** — voice-logged workout tracker
-
-If your app uses this shim, open a PR adding it here.
-
 ## License
 
 MIT.
