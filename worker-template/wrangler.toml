@@ -1,0 +1,11 @@
+name = "even-voice-shim-worker"
+main = "src/index.ts"
+compatibility_date = "2024-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Set via `wrangler secret put`, NOT in this file:
+#   wrangler secret put SHARED_SECRET     # plugin-side bearer token
+#   wrangler secret put DEEPGRAM_API_KEY  # https://console.deepgram.com
+#
+# SHARED_SECRET is what your plugin pastes into its "Worker secret" setting.
+# Pick a long random string (32+ chars).
