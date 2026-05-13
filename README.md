@@ -27,7 +27,7 @@ The Even Hub SDK (`@evenrealities/even_hub_sdk@0.0.10` at the time of writing) e
 
 Today, every voice-driven plugin is solving the same problem the same way: deploy a Cloudflare Worker, wire it to a paid STT provider (Deepgram, Whisper, etc.), manage keys and bearer tokens in plugin settings. This package extracts that pattern out of two existing apps so the third, fourth, and fifth voice-driven plugins don't have to redo it from scratch.
 
-A platform-level fix is the right long-term answer. A feature request is open at [`even-realities/everything-evenhub`](https://github.com/even-realities/everything-evenhub) (search for "recognizeSpeech"). Until that lands, this is the best alternative.
+A platform-level fix is the right long-term answer. Pinging the [Even Realities developer Discord](https://discord.gg/Y4jHMCU4sv) or filing an issue against the [`even-realities/everything-evenhub`](https://github.com/even-realities/everything-evenhub) docs repo asking for a `bridge.recognizeSpeech()` SDK method is the path to make this package obsolete. Until that lands, this is the best alternative.
 
 ## Install
 
@@ -35,7 +35,7 @@ This package is **not on npm**. Vendor it via one of:
 
 **git submodule:**
 ```bash
-git submodule add https://github.com/<you>/even-voice-shim vendor/even-voice-shim
+git submodule add https://github.com/tntpsu/even-voice-shim vendor/even-voice-shim
 ```
 Then in your `tsconfig.json` add the path:
 ```json
