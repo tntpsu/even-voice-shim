@@ -83,6 +83,30 @@ async function startListening() {
 
 `PttRecorder` accepts an optional `VadConfig` to tune the silence-hold, pre-voice timeout, and threshold for noisy environments. Defaults are tuned for typical living-room and gym noise.
 
+### Keeping the wearer's words only (0.2.0)
+
+SDK 0.0.16 tags every glasses audio frame with `speakerRole` (`self` / `other` / `unknown`, the Even app's guess from the direction sensor; the phone mic never carries one). Pass it with each frame and the recorder keeps the tags as ms spans alongside the PCM; the 0.2.0 Worker returns Deepgram's per-word timing; `filterWordsByRole` lays one over the other and drops the words that sat on `other`-tagged audio. Nothing is removed before transcription, so always keep the full text as a fallback:
+
+```ts
+import { PttRecorder, transcribe, filterWordsByRole, hasOtherAudio } from 'even-voice-shim'
+
+recorder.start({
+  onClosed: async (pcm, reason, ms, roles) => {
+    const result = await transcribe(pcm, cfg)
+    if (!result.ok) return
+    let text = result.text
+    if (result.words && hasOtherAudio(roles)) {
+      const f = filterWordsByRole(result.words, roles)
+      if (f.dropped > 0 && parses(f.text)) text = f.text   // else keep the full transcript
+    }
+    handleTranscript(text)
+  },
+})
+bridge.onEvenHubEvent.audioEvent(({ audioPcm, speakerRole }) => recorder.push(audioPcm, speakerRole))
+```
+
+Why not Deepgram's own diarization: with one batch request per clip, Deepgram numbers speakers from 0 in every request, so a speaker id never links one clip to the next. The glasses tag is the only identity that survives the clip boundary.
+
 ## Worker-side usage
 
 See [`worker-template/`](./worker-template/) for the one-file Cloudflare Worker. Deploy it with `wrangler deploy`, set `SHARED_SECRET` and `DEEPGRAM_API_KEY` as Wrangler secrets, paste the deployed URL + secret into your plugin's settings.

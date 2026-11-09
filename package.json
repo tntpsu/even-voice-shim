@@ -1,6 +1,6 @@
 {
   "name": "even-voice-shim",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Push-to-talk voice transcription shim for Even Realities G2 plugins. Workaround for the missing on-device STT API in @evenrealities/even_hub_sdk.",
   "private": true,
   "type": "module",

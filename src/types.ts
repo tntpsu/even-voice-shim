@@ -11,9 +11,30 @@ export interface TranscribeConfig {
   workerSecret: string
 }
 
+/** The Even app's per-frame speaker tag (SDK 0.0.16 `audioEvent.speakerRole`).
+ *  A heuristic from the glasses' direction sensor, not a firmware identity;
+ *  the phone mic never carries one. */
+export type SpeakerRole = 'self' | 'other' | 'unknown'
+
+/** One stretch of a clip tagged with a single role, in ms from clip start. */
+export interface RoleSpan {
+  startMs: number
+  endMs: number
+  role: SpeakerRole
+}
+
+/** One word with Deepgram's timing, in ms from clip start. */
+export interface TranscribedWord {
+  word: string
+  startMs: number
+  endMs: number
+}
+
 export interface TranscribeResult {
   ok: boolean
   text: string
   error?: string
   durationMs?: number
+  /** Present when the Worker returned word timings (worker-template ≥ 0.2.0). */
+  words?: TranscribedWord[]
 }

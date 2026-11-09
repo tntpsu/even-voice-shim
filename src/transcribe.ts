@@ -7,7 +7,20 @@
 // reliable path. Adds ~300–800ms latency vs streaming, fine for
 // short-utterance push-to-talk patterns ("two twenty-five for five").
 
-import type { TranscribeConfig, TranscribeResult } from './types'
+import type { TranscribeConfig, TranscribeResult, TranscribedWord } from './types'
+
+/** Deepgram times words in seconds from the top of the audio it was sent,
+ *  i.e. from the start of the clip. Words without both times are skipped. */
+export function parseWords(raw: unknown): TranscribedWord[] | undefined {
+  if (!Array.isArray(raw)) return undefined
+  const out: TranscribedWord[] = []
+  for (const w of raw as Array<{ word?: unknown; start?: unknown; end?: unknown }>) {
+    if (typeof w?.word !== 'string' || typeof w.start !== 'number' || typeof w.end !== 'number') continue
+    if (!Number.isFinite(w.start) || !Number.isFinite(w.end)) continue
+    out.push({ word: w.word, startMs: Math.round(w.start * 1000), endMs: Math.round(w.end * 1000) })
+  }
+  return out
+}
 
 export async function transcribe(
   pcm: Uint8Array,
@@ -36,9 +49,10 @@ export async function transcribe(
       const txt = await res.text().catch(() => '')
       return { ok: false, text: '', error: `HTTP ${res.status}: ${txt.slice(0, 200)}`, durationMs }
     }
-    const data = await res.json() as { text?: string; transcript?: string }
+    const data = await res.json() as { text?: string; transcript?: string; words?: unknown }
     const text = (data.text ?? data.transcript ?? '').toString()
-    return { ok: true, text, durationMs }
+    const words = parseWords(data.words)
+    return words ? { ok: true, text, durationMs, words } : { ok: true, text, durationMs }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
     return { ok: false, text: '', error: msg }

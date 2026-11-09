@@ -1,6 +1,8 @@
 // Minimal Cloudflare Worker: receives PCM16 mono 16 kHz audio at
 // POST /transcribe, wraps as WAV, calls Deepgram's HTTP /v1/listen
-// endpoint, returns { ok: true, text }.
+// endpoint, returns { ok: true, text, words }. `words` carries Deepgram's
+// per-word start/end (seconds from the top of the clip) so the plugin can
+// lay the glasses' speaker tag over the transcript.
 //
 // Bearer-gated by SHARED_SECRET (configure with `wrangler secret put`).
 // CORS-permissive so the plugin's WebView can hit it from any origin.
@@ -58,10 +60,24 @@ async function handleTranscribe(request: Request, env: Env): Promise<Response> {
     })
   }
   const json = (await dgRes.json()) as {
-    results?: { channels?: Array<{ alternatives?: Array<{ transcript?: string }> }> }
+    results?: {
+      channels?: Array<{
+        alternatives?: Array<{
+          transcript?: string
+          words?: Array<{ word?: string; punctuated_word?: string; start?: number; end?: number }>
+        }>
+      }>
+    }
   }
-  const text = (json.results?.channels?.[0]?.alternatives?.[0]?.transcript ?? '').trim()
-  return jsonResponse(200, { ok: true, text })
+  const alt = json.results?.channels?.[0]?.alternatives?.[0]
+  const text = (alt?.transcript ?? '').trim()
+  // punctuated_word carries smart_format's numerals ("225" not "two twenty
+  // five"), matching the transcript the plugin's grammar already parses.
+  const words = (alt?.words ?? [])
+    .filter(w => typeof w.start === 'number' && typeof w.end === 'number')
+    .map(w => ({ word: (w.punctuated_word ?? w.word ?? '').trim(), start: w.start, end: w.end }))
+    .filter(w => w.word.length > 0)
+  return jsonResponse(200, { ok: true, text, words })
 }
 
 /** Wrap raw PCM16 mono 16 kHz as a WAV blob (44-byte header + samples). */

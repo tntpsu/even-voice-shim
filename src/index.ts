@@ -13,7 +13,12 @@ export {
 export { PttRecorder } from './recorder'
 export type { RecorderHandlers } from './recorder'
 
-export { transcribe } from './transcribe'
+export { transcribe, parseWords } from './transcribe'
+export {
+  filterWordsByRole, hasOtherAudio, mixOver, DEFAULT_FILTER_WORDS,
+} from './speaker'
+export type { FilterWordsConfig, FilteredWords, RoleMix } from './speaker'
 export type {
-  AudioFrame, TranscribeConfig, TranscribeResult,
+  AudioFrame, TranscribeConfig, TranscribeResult, TranscribedWord,
+  SpeakerRole, RoleSpan,
 } from './types'
